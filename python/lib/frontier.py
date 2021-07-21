@@ -145,8 +145,10 @@ def _stringify(parameter):
 
     elif isinstance(parameter, str):
         return parameter
+    elif isinstance(parameter,bytes):
+        return parameter.decode()
 
-    elif isinstance(parameter, int) or isinstance(parameter, long) or isinstance(parameter, float):
+    elif isinstance(parameter, int) or isinstance(parameter, float):
         return str(parameter)
     elif isinstance(parameter, datetime.datetime):
         return "TO_TIMESTAMP('"+str(parameter.strftime("%Y-%m-%d %H %M %S"))+"','YYYY-MM-DD HH24 MI SS')"
