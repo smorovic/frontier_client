@@ -70,7 +70,7 @@ COMMON_INC	=	${EXPAT_INC} ${OPENSSL_INC} ${PACPARSER_INC} ${ZLIB_INC}
 INC		=	${COMMON_INC} -I./include -I.
 LIBDIR		=
 # -ldl needed by Fedora 18
-LIBS		= 	${EXPAT_LD_FLAGS} -lexpat ${OPENSSL_LD_FLAGS} -lssl -lcrypto -L. ${ZLIB_LD_FLAGS} -lz -ldl
+LIBS		= 	${EXPAT_LD_FLAGS} -lexpat ${OPENSSL_LD_FLAGS} -lssl -lcrypto -L. ${ZLIB_LD_FLAGS} -lz -ldl -lpthread
 
 OBJ		=	fn-base64.o fn-hash.o fn-zlib.o frontier.o response.o payload.o rs-bin.o memdata.o \
                         frontier_log.o frontier_error.o frontier_config.o fn-mem.o pacparser-dlopen.o anydata.o frontier-cpp.o FrontierExceptionMapper.o

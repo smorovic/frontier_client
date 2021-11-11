@@ -52,13 +52,13 @@ Request::~Request()
 
  
  
-std::string Request::encodeParam(const std::string &value)
+std::string Request::encodeParam(z_stream **zstream_ptr,const std::string &value)
  {
   const char *str=value.c_str();
   char *buf;
   int len;
   
-  len=fn_gzip_str2urlenc(str,strlen(str),&buf);
+  len=fn_gzip_str2urlenc(zstream_ptr, str,strlen(str),&buf);
   if(len<0)
    {
     std::ostringstream oss;
@@ -173,6 +173,11 @@ void Connection::setTimeToLive(int ttl)
   frontier_setTimeToLive(channel,ttl);
  }
  
+void Connection::getZStreamPtr()
+ {
+  return &(channel->dezstream);
+ }
+
 
 void Connection::setDefaultParams(const std::string& logicalServer,
 	    const std::string& parameterList)

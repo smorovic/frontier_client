@@ -17,6 +17,7 @@
 #define __HEADER_H_FRONTIER_H
 
 #include <sys/types.h>
+#include "zlib.h"
 #include "frontier_config.h"
 #include "frontier_log.h"
 #include "frontier_error.h"
@@ -25,7 +26,6 @@
 
 typedef unsigned long FrontierChannel;
 typedef void FrontierRSBlob;
-
 
 /*frontierRSBlob_get is deprecated, use frontierRSBlob_open instead*/
 FrontierRSBlob *frontierRSBlob_get(FrontierChannel u_channel,int n,int *ec);
@@ -76,7 +76,7 @@ void *frontier_malloc(size_t size);
 void frontier_free(void *ptr);
 
 // GZip and base64URL encode
-int fn_gzip_str2urlenc(const char *str,int size,char **out);
+int fn_gzip_str2urlenc(z_stream **dezstream_ptr, const char *str,int size,char **out);
 
 
 #endif /*__HEADER_H_FRONTIER_H*/

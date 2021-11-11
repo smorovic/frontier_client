@@ -26,6 +26,8 @@ extern "C"
 #include "frontier_client/frontier.h"
  }
 
+struct z_stream;
+
 namespace frontier{
 
 enum encoding_t {BLOB};
@@ -173,6 +175,9 @@ class Connection
    // Set cache time to live for following requested objects.
    // 1=short, 2=long, 3=forever.  Default 2.
    void setTimeToLive(int ttl);
+
+   //get deflate zstream double pointer
+   z_stream** getZStreamPtr();
 
    // Deprecated interface: 0 -> setTimeToLive(2), !0 -> setTimeToLive(1)
    void setReload(int reload);

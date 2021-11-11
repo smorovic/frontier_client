@@ -22,10 +22,13 @@
 #define FN_ZLIB_E_OTHER		-3
 #define FN_ZLIB_E_TOOBIG	-4
 
-long fn_gzip_str(const char *src,long src_size,char *dest,long dest_size);
-void fn_gzip_cleanup();
-int fn_gunzip_init();
-int fn_gunzip_update(unsigned char *src,int *src_size,const unsigned char *dest,int *dest_size,int final);
+#include "zlib.h"
+
+long fn_gzip_str(z_stream **dezstream_ptr,const char *src,long src_size,char *dest,long dest_size);
+void fn_decleanup(z_stream **dezstream_ptr);
+void fn_incleanup(z_stream **inzstream_ptr);
+int fn_gunzip_init(z_stream **inzstream_ptr);
+int fn_gunzip_update(z_stream*inzstream, unsigned char *src,int *src_size,const unsigned char *dest,int *dest_size,int final);
 
 
 #endif //__H__FN_ZLIB_H
