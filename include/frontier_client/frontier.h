@@ -17,6 +17,7 @@
 #define __HEADER_H_FRONTIER_H
 
 #include <sys/types.h>
+#include "zlib.h"
 #include "frontier_config.h"
 #include "frontier_log.h"
 #include "frontier_error.h"
@@ -49,8 +50,8 @@ int frontier_initdebug(void *(*f_mem_alloc)(size_t size),void (*f_mem_free)(void
 			const char *logfile, const char *loglevel);
 int frontier_init(void *(*f_mem_alloc)(size_t size),void (*f_mem_free)(void *ptr));
 
-FrontierChannel frontier_createChannel(const char *srv,const char *proxy,int *ec);
-FrontierChannel frontier_createChannel2(FrontierConfig* config, int *ec);
+FrontierChannel frontier_createChannel(const char *srv,const char *proxy,int *ec, z_stream*** zstream_ptr);
+FrontierChannel frontier_createChannel2(FrontierConfig* config, int *ec, z_stream*** zstream_ptr);
 void frontier_closeChannel(FrontierChannel chn);
 void frontier_setTimeToLive(FrontierChannel u_channel,int ttl); // 1=short, 2=long, 3=forever
 void frontier_setReload(FrontierChannel u_channel,int reload); // deprecated: 0=long ttl, !0=short ttl
@@ -75,7 +76,9 @@ void *frontier_malloc(size_t size);
 void frontier_free(void *ptr);
 
 // GZip and base64URL encode
-int fn_gzip_str2urlenc(const char *str,int size,char **out);
+int fn_gzip_str2urlenc(z_stream **dezstream_ptr, const char *str,int size,char **out);
+void fn_incleanup(z_stream **inzstream_ptr);
+int fn_gunzip_init(z_stream **inzstream_ptr);
 
 // NOTE: The contents of this struct may not change or binary compatibility
 //   will break.

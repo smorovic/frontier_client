@@ -14,6 +14,7 @@
  */
 #include "frontier_client/frontier-cpp.h"
 #include "frontier_client/FrontierException.hpp"
+#include "fn-zlib.h"
 
 #include <unistd.h>
 #include <iostream>
@@ -151,8 +152,11 @@ int do_main(int argc, char **argv)
      }
     if(file_name) {in_file.close();}
     std::cout<<"Entered:\n"<<sql<<'\n';
-    
+   
+    z_stream *zstream;
+    //fn_gunzip_init(&zstream);
     std::string param=frontier::Request::encodeParam(sql);
+    //fn_incleanup(&zstream);
     std::cout<<"Param ["<<param<<"]\n";
           
     std::list<std::string> serverList;

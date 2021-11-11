@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <frontier.h>
+#include <stdatomic.h>
 
 
 #define CHECK(){if(ec!=FRONTIER_OK){printf("Error %d\n",ec); exit(1);}}

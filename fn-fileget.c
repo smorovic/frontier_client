@@ -125,7 +125,8 @@ int main(int argc, char **argv)
     fprintf(stderr,"Error getting frontierConfig object: %s\n",frontier_getErrorMsg());
     return 2;
    }
-  channel=frontier_createChannel2(config,&ec);
+  void *dummy;
+  channel=frontier_createChannel2(config,&ec, &dummy);
   if(ec!=FRONTIER_OK)
    {
     fprintf(stderr,"Error creating frontier channel: %s\n",frontier_getErrorMsg());

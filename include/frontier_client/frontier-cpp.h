@@ -50,7 +50,8 @@ class Request
    virtual void addKey(const std::string& key,const std::string& value);   
    virtual ~Request();   
    
-   static std::string encodeParam(const std::string &value);   
+   static std::string encodeParam(const std::string &value);
+   static std::string encodeParam(z_stream **zstream_ptr,const std::string &value);   
    // set the zip level of retrieved data
    // level 0 is off, level 1 is fast, level 5 is normal, level 9 is best
    // default is 5
@@ -160,6 +161,7 @@ class Connection
   private:
    friend class Session;
    unsigned long channel;
+   z_stream **zstream_ptr;
 
   public:
    
@@ -173,6 +175,9 @@ class Connection
    // Set cache time to live for following requested objects.
    // 1=short, 2=long, 3=forever.  Default 2.
    void setTimeToLive(int ttl);
+
+   //get deflate zstream double pointer
+   z_stream** getZStreamPtr();
 
    // Deprecated interface: 0 -> setTimeToLive(2), !0 -> setTimeToLive(1)
    void setReload(int reload);

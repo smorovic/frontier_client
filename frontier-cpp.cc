@@ -51,14 +51,23 @@ Request::~Request()
  }
 
  
- 
 std::string Request::encodeParam(const std::string &value)
+ {
+  //create z_stream per call
+  z_stream *zstream;
+  fn_gunzip_init(&zstream);
+  encodeParam(&zstream,value);
+  fn_incleanup(&zstream);
+ }
+
+
+std::string Request::encodeParam(z_stream **zstream_ptr,const std::string &value)
  {
   const char *str=value.c_str();
   char *buf;
   int len;
   
-  len=fn_gzip_str2urlenc(str,strlen(str),&buf);
+  len=fn_gzip_str2urlenc(zstream_ptr, str,strlen(str),&buf);
   if(len<0)
    {
     std::ostringstream oss;
@@ -113,7 +122,7 @@ Connection::Connection(const std::string& server_url,const std::string* proxy_ur
   
   if(proxy_url) proxy_url_c=proxy_url->c_str();
 
-  channel=frontier_createChannel(server_url.c_str(),proxy_url_c,&ec);
+  channel=frontier_createChannel(server_url.c_str(),proxy_url_c,&ec,&zstream_ptr);
   if(ec!=FRONTIER_OK) {
     FrontierExceptionMapper::throwException(ec, "Can not create frontier channel");
   }
@@ -150,7 +159,7 @@ Connection::Connection(const std::list<std::string>& serverUrlList,
     }
   }
   errorCode = FRONTIER_OK;
-  channel = frontier_createChannel2(config, &errorCode);
+  channel = frontier_createChannel2(config, &errorCode, &zstream_ptr);
   if(errorCode != FRONTIER_OK) {
     FrontierExceptionMapper::throwException(errorCode, "Error creating frontier channel");
   }
@@ -173,6 +182,11 @@ void Connection::setTimeToLive(int ttl)
   frontier_setTimeToLive(channel,ttl);
  }
  
+z_stream** Connection::getZStreamPtr()
+ {
+  return zstream_ptr;
+ }
+
 
 void Connection::setDefaultParams(const std::string& logicalServer,
 	    const std::string& parameterList)

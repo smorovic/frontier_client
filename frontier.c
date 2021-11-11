@@ -34,6 +34,8 @@
 #include <openssl/pem.h>
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
+//#include <stdatomic.h>
+#include <pthread.h>
 
 int frontier_log_level;
 char *frontier_log_file;
@@ -41,14 +43,19 @@ int frontier_log_dup = 0;
 pid_t frontier_pid;
 void *(*frontier_mem_alloc)(size_t size);
 void (*frontier_mem_free)(void *ptr);
+
+//ensure init is thread-safe
+static pthread_mutex_t init_lock;
 static int initialized=0;
 
 static char frontier_id[FRONTIER_ID_SIZE];
 static char frontier_api_version[]=FNAPI_VERSION;
 
+//thread safe monotonous counter
 static int chan_seqnum=0;
 static void channel_delete(Channel *chn);
 
+//used in open connection which CMSSW/Coral run using mutex
 static fn_client_cache_list *client_cache_list=0;
 
 
@@ -155,7 +162,11 @@ int frontier_init(void *(*f_mem_alloc)(size_t size),void (*f_mem_free)(void *ptr
 int frontier_initdebug(void *(*f_mem_alloc)(size_t size),void (*f_mem_free)(void *ptr),
 			const char *logfilename, const char *loglevel)
  {
-  if(initialized) return FRONTIER_OK;
+  pthread_mutex_lock(&init_lock);
+  if(initialized) {
+    pthread_mutex_unlock(&init_lock);
+    return FRONTIER_OK;
+  }
 
   if(!f_mem_alloc) {f_mem_alloc=malloc; f_mem_free=free;}
   if(!f_mem_free) {f_mem_alloc=malloc; f_mem_free=free;}
@@ -203,6 +214,7 @@ int frontier_initdebug(void *(*f_mem_alloc)(size_t size),void (*f_mem_free)(void
   set_frontier_id();
 
   initialized=1;
+  pthread_mutex_unlock(&init_lock);
 
   return FRONTIER_OK;
  }
@@ -232,7 +244,8 @@ static Channel *channel_create2(FrontierConfig *config, int *ec)
 
   frontier_statistics_start_debug();
 
-  chn->seqnum=++chan_seqnum;
+  //atomic increment and fetch
+  chn->seqnum=__sync_add_and_fetch(&chan_seqnum,1);
   chn->pid=frontier_pid;
   chn->cfg=config;
   if(!chn->cfg)
@@ -448,7 +461,7 @@ static void channel_delete(Channel *chn)
   if(chn->seqnum==chan_seqnum)
     frontier_statistics_stop_debug();
   frontier_mem_free(chn);
-  fn_gzip_cleanup();
+  fn_decleanup(&(chn->dezstream));
   frontier_log_close();
  }
 
@@ -462,14 +475,16 @@ static void frontier_fini()
  }
 
 
-FrontierChannel frontier_createChannel(const char *srv,const char *proxy,int *ec)
+FrontierChannel frontier_createChannel(const char *srv,const char *proxy,int *ec,z_stream ***zstream_ptr)
  {
   Channel *chn=channel_create(srv,proxy,ec);
+  *zstream_ptr=&(chn->dezstream);
   return (unsigned long)chn;
  }
 
-FrontierChannel frontier_createChannel2(FrontierConfig* config, int *ec) {
+FrontierChannel frontier_createChannel2(FrontierConfig* config, int *ec,z_stream ***zstream_ptr) {
   Channel *chn = channel_create2(config, ec);
+  *zstream_ptr=&(chn->dezstream);
   return (unsigned long)chn;
 }
 
@@ -939,7 +954,7 @@ int frontier_postRawData(FrontierChannel u_channel,const char *uri,const char *b
   if((pid=getpid())!=frontier_pid)
    {
      pid_t oldpid;
-     // process must have forked
+     // process must have forked (forking no longer happens in CMSSW, so this will never run)
      frontier_log(FRONTIER_LOGLEVEL_DEBUG,__FILE__,__LINE__,"process id changed to %d",(int)pid);
      oldpid=frontier_pid;
      frontier_pid=pid;
@@ -951,6 +966,7 @@ int frontier_postRawData(FrontierChannel u_channel,const char *uri,const char *b
    }
   if(pid!=chn->pid)
    {
+     //also won't run now that we don't have CSSW forking
      frontier_log(FRONTIER_LOGLEVEL_DEBUG,__FILE__,__LINE__,"dropping any chan %d persisted connection because process id changed",chn->seqnum);
      chn->pid=pid;
      // drop the socket because it is shared between parent and child

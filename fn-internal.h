@@ -27,6 +27,7 @@
 #include "openssl/md5.h"
 #include "openssl/sha.h"
 #include <time.h>
+#include "zlib.h"
 
 struct s_FrontierMemBuf
  {
@@ -49,6 +50,7 @@ struct s_FrontierMemData
   SHA256_CTX sha256_ctx;
   int secured;
   int binzipped;
+  z_stream *inzstream;
   unsigned char zipbuf[4096];
   int zipbuflen;
  };
@@ -147,6 +149,7 @@ struct s_Channel
   void *serverrsakey[FRONTIER_MAX_SERVERN];
   fn_query_stat query_stat;
   unsigned int query_bytes;
+  z_stream *dezstream;
  };
 typedef struct s_Channel Channel;
 
