@@ -250,13 +250,13 @@ maincc.o: maincc.cc $(HDRXX)
 	$(CXX) $(CXXOPT_APP) -I./include -c maincc.cc
 
 fn-maincc: maincc.o $(HDRXX)
-	$(CXX) $(CXXOPT_APP) -L. -o fn-maincc maincc.o -L. -lfrontier_client
+	$(CXX) $(CXXOPT_APP) -L. -o fn-maincc maincc.o -L. -lfrontier_client -lpthread
 
 maintest.o: maintest.cc $(HDRXX)
 	$(CXX) $(CXXOPT_APP) -I./include -c maintest.cc
 
 fn-maintest: maintest.o $(HDRXX)
-	$(CXX) $(CXXOPT_APP) -L. -o fn-maintest maintest.o -L. -lfrontier_client
+	$(CXX) $(CXXOPT_APP) -L. -o fn-maintest maintest.o -L. -lfrontier_client -lpthread
 
 FrontierExceptionMapper.o: FrontierExceptionMapper.cpp $(HDRXX)
 	$(CXX) $(CXXOPT_APP) -I./include -c FrontierExceptionMapper.cpp
@@ -289,7 +289,7 @@ test-req.o: test-req.cc $(HDRXX)
 	$(CXX) $(CXXOPT_APP) -I./include -c test-req.cc
 
 fn-req: test-req.o $(HDRXX)
-	$(CXX) $(CXXOPT_APP) -L. -o fn-req test-req.o -L. -lfrontier_client
+	$(CXX) $(CXXOPT_APP) -L. -o fn-req test-req.o -L. -lfrontier_client -lpthread
 
 # staticly linked app works better in gdb
 fn-req.static: libfrontier_client.so fn-req
