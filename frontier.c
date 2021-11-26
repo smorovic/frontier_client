@@ -57,7 +57,7 @@ static fn_client_cache_list *client_cache_list=0;
 static pthread_mutex_t mutex_lock;
 static pthread_once_t mutex_init_control=PTHREAD_ONCE_INIT;
 static pthread_mutexattr_t mutex_attr;
-static int threadsafe=0;
+static int threadsafe=1;
 static int thread_debug=0;
 
 static void init_mutex()
